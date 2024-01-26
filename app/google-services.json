@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "998908178102",
+    "project_id": "lab2se-e06d1",
+    "storage_bucket": "lab2se-e06d1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:998908178102:android:dbf2726a5af60afa540017",
+        "android_client_info": {
+          "package_name": "com.example.lab2se"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAm_fkHAECBjskCnySEqxIT_pKa2gaLpVA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
