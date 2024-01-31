@@ -181,8 +181,8 @@ fun HomeLayout(startListening: () -> Unit) {
         )
         Column (
             modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+                .fillMaxSize()
+                .padding(16.dp),
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -248,6 +248,20 @@ fun ControlCard(title: String, status: MutableState<Boolean>, toggle: (Boolean) 
                         Text(text = if (status.value) "OPEN" else "CLOSED")
                     }
                 }
+                // Icons
+                val iconRes = if (title == "LAMP") {
+                    if (status.value) R.drawable.lamp_2 else R.drawable.lamp_1
+                } else if (title == "DOOR") {
+                    if (status.value) R.drawable.door_2 else R.drawable.door_1
+                } else {
+                    if (status.value) R.drawable.window_2 else R.drawable.window_1
+                }
+                Icon(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.Unspecified
+                )
                 Switch(
                     checked = status.value,
                     onCheckedChange = toggle,
