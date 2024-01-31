@@ -49,6 +49,13 @@ import android.content.Intent
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.widget.Toast
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
 
 class MainActivity : ComponentActivity() {
     private val RECORD_AUDIO_PERMISSION_CODE = 1
@@ -57,44 +64,40 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            // Request the permission if it is not granted
+        setContent {
+            Lab2seTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background,
+                ) {
+                    HomeLayout(startListening = { startListening() })
+                }
+            }
+        }
+    }
+
+    private fun startListening() {
+        while (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.RECORD_AUDIO),
                 RECORD_AUDIO_PERMISSION_CODE
             )
-        } else {
-            // Permission is already granted, proceed with the app initialization
-            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this).apply {
-                setRecognitionListener(object : RecognitionListenerAdapter() {
-                    override fun onResults(results: Bundle) {
-                        val matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                        if (!matches.isNullOrEmpty()) {
-                            Log.d("SPEECH", matches[0])
-                            handleSpeechCommand(matches[0])
-                        }
-                    }
-                })
-            }
-
-            setContent {
-                Lab2seTheme {
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.background,
-                    ) {
-                        HomeLayout()
+        }
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this).apply {
+            setRecognitionListener(object : RecognitionListenerAdapter() {
+                override fun onResults(results: Bundle) {
+                    val matches =
+                        results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                    if (!matches.isNullOrEmpty()) {
+                        Log.d("SPEECH", matches[0])
+                        handleSpeechCommand(matches[0])
                     }
                 }
-            }
-
-            // Start listening
-            startListening()
+            })
         }
-    }
 
-    private fun startListening() {
+        // Start listening
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
@@ -143,7 +146,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeLayout() {
+fun HomeLayout(startListening: () -> Unit) {
     val lightStatus = remember { mutableStateOf(false) }
     val doorStatus = remember { mutableStateOf(false) }
     val windowStatus = remember { mutableStateOf(false) }
@@ -176,23 +179,40 @@ fun HomeLayout() {
                 titleContentColor = Color.White
             ),
         )
-        Column(
+        Column (
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            .fillMaxSize()
+            .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ControlCard(title = "LAMP", status = lightStatus) {
-                lightStatus.value = it
-                myRef.child("light").setValue(if (it) 1 else 0)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                ControlCard(title = "LAMP", status = lightStatus) {
+                    lightStatus.value = it
+                    myRef.child("light").setValue(if (it) 1 else 0)
+                }
+                ControlCard(title = "DOOR", status = doorStatus) {
+                    doorStatus.value = it
+                    myRef.child("door").setValue(if (it) 1 else 0)
+                }
+                ControlCard(title = "WINDOW", status = windowStatus) {
+                    windowStatus.value = it
+                    myRef.child("window").setValue(if (it) 1 else 0)
+                }
             }
-            ControlCard(title = "DOOR", status = doorStatus) {
-                doorStatus.value = it
-                myRef.child("door").setValue(if (it) 1 else 0)
-            }
-            ControlCard(title = "WINDOW", status = windowStatus) {
-                windowStatus.value = it
-                myRef.child("window").setValue(if (it) 1 else 0)
+            Button(
+                onClick = { startListening() },
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.mic_icon),
+                    contentDescription = "Mic",
+                    tint = Color.Yellow,
+                    modifier = Modifier.size(32.dp)
+                )
             }
         }
     }
@@ -240,13 +260,5 @@ fun ControlCard(title: String, status: MutableState<Boolean>, toggle: (Boolean) 
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    Lab2seTheme {
-        HomeLayout()
     }
 }
